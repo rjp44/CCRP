@@ -18,13 +18,14 @@ app.use(bodyParser.urlencoded({	extended: true })); // support encoded bodies
 app.post('/order-request', function(req, res) {
     const jsonData = req.body
         
-    const answers = jsonData.twilio.collected_data.order_food.answers;  //Get the answers object from the incoming request object
+    const answers = jsonData.twilio.collected_data.item_details.answers;  //Get the answers object from the incoming request object
 
     const objectKeys = Object.keys(answers).map(key => (key))           //Get a list of all keys within "answers" object
 
     const csvFormat = objectKeys.map(key => {
     return `"${answers[key].answer}"`                                 //Cycle through map and create the csv format
     })
+    
 
     res.send(csvFormat.toString());
 });
