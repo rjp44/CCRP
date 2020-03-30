@@ -7,15 +7,11 @@ const config = require('./config.js');
 
 var bodyParser = require('body-parser');
 
-const { Sheet } = require('google-apis.js')
+const { Sheet } = require('./lib/googleSheet.js')
 app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({	extended: true })); // support encoded bodies
-
-
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 var sheet = new Sheet(config.sheet);
-
-sheet.getData();
 
 // routes will go here
 
@@ -25,21 +21,33 @@ sheet.getData();
 
 // POST http://localhost:8080/
 // parameters sent with
-app.post('/order-request', function(req, res) {
+app.post('/order-request', function (req, res, next) {
+  try {
     const jsonData = req.body
 
-    const answers = jsonData.twilio.collected_data.item_details.answers;  //Get the answers object from the incoming request object
+    const answers = jsonData.twilio.collected_data.item_details.answers; //Get the answers object from the incoming request object
+    const objectKeys = Object.keys(answers)
+      .map(key => (key)) //Get a list of all keys within "answers" object
 
-    const objectKeys = Object.keys(answers).map(key => (key))           //Get a list of all keys within "answers" object
-
-    const csvFormat = objectKeys.map(key => {
-    return `"${answers[key].answer}"`                                 //Cycle through map and create the csv format
-    })
-
-
-    res.send(csvFormat.toString());
+    // Add an array of strings which represents one row, return result or let express sort out error.
+    sheet.appendData('Requests!A:Z', [objectKeys.map(key => `${answers[key].answer}`)])
+      .then(result => {
+        console.log('result: ', result)
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200)
+        .send(JSON.stringify(result))
+      });
+  } catch (err) {
+    console.log('Error: ', err)
+    next(err);
+  };
 });
 
-// start the server
-app.listen(port);
-console.log('Server started! At http://localhost:' + port);
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`App listening on port ${port}`);
+    console.log('Press Ctrl+C to quit.');
+  });
+}
+
+exports = module.exports = app;

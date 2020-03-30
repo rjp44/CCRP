@@ -6,7 +6,8 @@ const config = {
     "sheet": "<YOUR DEVELOPMENT/TEST SHEET ID>"
   },
   "all": {
-    "credentials": "credentials/credentials.json"
+    "credentials": "credentials/credentials.json",
+    "tokenPath": "credentials/tokenFile"
   }
 };
 
