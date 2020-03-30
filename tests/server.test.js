@@ -6,10 +6,10 @@ const config = require('../config.js');
 app = require('../index.js');
 
 const requests = [
-  { name: 'Rob PiVirgil', age: '56', address: 'North Ham, London', need: 'Toilet Rolls' },
-  { name: 'Rob Pickering', age: '57', address: 'South Ham, London', need: 'Toilet Bowls' },
-  { name: 'Virgil Names', age: '58', address: 'East Ham, London', need: 'Toilet Water' },
-  { name: 'Pickard Vision', age: '59', address: 'West Ham, London', need: 'Toilet Lids' },
+  { name: { answer: 'Rob PiVirgil' }, age: { answer: '56' }, address: { answer: 'North Ham, London' }, need: { answer: 'Toilet Rolls' } },
+  { name: { answer: 'Rob Pickering' }, age: { answer: '57' }, address: { answer: 'South Ham, London' }, need: { answer: 'Toilet Bowls' } },
+  { name: { answer: 'Virgil Names' }, age: { answer: '58' }, address: { answer: 'East Ham, London' }, need: { answer: 'Toilet Water' } },
+  { name: { answer: 'Pickard Vision' }, age: { answer: '59' }, address: { answer: 'West Ham, London' }, need: { answer: 'Toilet Lids' } },
 ]
 
 test(`Addrow`, function (t) {

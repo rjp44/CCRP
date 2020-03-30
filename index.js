@@ -35,7 +35,6 @@ app.post('/order-request', function (req, res, next) {
     // Add an array of strings which represents one row, return result or let express sort out error.
     sheet.appendData('Requests!A:Z', [objectKeys.map(key => `${answers[key].answer}`)])
       .then(result => {
-        console.log('result: ', result)
         res.setHeader('Content-Type', 'application/json');
         res.status(200)
         .send(JSON.stringify(result))
