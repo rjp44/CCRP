@@ -1,61 +1,94 @@
-
-// BEFORE RUNNING:
-// ---------------
-// 1. If not already done, enable the Google Sheets API
-//    and check the quota for your project at
-//    https://console.developers.google.com/apis/api/sheets
-// 2. Install the Node.js client library by running
-//    `npm install googleapis --save`
-
+const fs = require('fs');
+const readline = require('readline');
 const {google} = require('googleapis');
-const sheets = google.sheets('v4');
 
-async function main () {
-  const authClient = await authorize();
-  const request = {
-    // The ID of the spreadsheet to update.
-    spreadsheetId: '1ga7x21vsEgQeMLG9szOQbd5s1QKD0-ShDerKt6IFibs',  // TODO: Update placeholder value.
+// If modifying these scopes, delete token.json.
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readwrite'];
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const config = require('config.js');
 
-    // The A1 notation of a range to search for a logical table of data.
-    // Values are appended after the last row of the table.
-    range: 'Requests!A1:E1',  // TODO: Update placeholder value.
+// Load client secrets from a local file.
+fs.readFile(config.credentials (err, content) => {
+  if (err) return console.log('Error loading client secret file:', err);
+  // Authorize a client with credentials, then call the Google Sheets API.
+  authorize(JSON.parse(content), listMajors);
+});
 
-    // How the input data should be interpreted.
-    valueInputOption: 'RAW',  // TODO: Update placeholder value.
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ */
+function authorize(credentials, callback) {
+  const {client_secret, client_id, redirect_uris} = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+      client_id, client_secret, redirect_uris[0]);
 
-    // How the input data should be inserted.
-    insertDataOption: 'INSERT_ROWS',  // TODO: Update placeholder value.
-
-    resource: {
-      // TODO: Add desired properties to the request body.
-    },
-
-    auth: authClient,
-  };
-
-  try {
-    const response = (await sheets.spreadsheets.values.append(request)).data;
-    // TODO: Change code below to process the `response` object:
-    console.log(JSON.stringify(response, null, 2));
-  } catch (err) {
-    console.error(err);
-  }
+  // Check if we have previously stored a token.
+  fs.readFile(config.tokenfile, (err, token) => {
+    if (err) return getNewToken(oAuth2Client, callback);
+    oAuth2Client.setCredentials(JSON.parse(token));
+    callback(oAuth2Client);
+  });
 }
-main();
 
-async function authorize() {
-  // TODO: Change placeholder below to generate authentication credentials. See
-  // https://developers.google.com/sheets/quickstart/nodejs#step_3_set_up_the_sample
-  //
-  // Authorize using one of the following scopes:
-  'https://www.googleapis.com/auth/drive'
-  'https://www.googleapis.com/auth/drive.file'
-  'https://www.googleapis.com/auth/spreadsheets'
-  let authClient = null;
-
-  if (authClient == null) {
-    throw Error('authentication failed');
-  }
-
-  return authClient;
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback for the authorized client.
+ */
+function getNewToken(oAuth2Client, callback) {
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+  console.log('Authorize this app by visiting this url:', authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oAuth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error while trying to retrieve access token', err);
+      oAuth2Client.setCredentials(token);
+      // Store the token to disk for later program executions
+      fs.writeFile(config.tokenfile, JSON.stringify(token), (err) => {
+        if (err) return console.error(err);
+        console.log('Token stored to', config.tokenfile);
+      });
+      callback(oAuth2Client);
+    });
+  });
 }
+
+/**
+ * Prints the names and majors of students in a sample spreadsheet:
+ * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+ * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
+ */
+function getdata(auth) {
+  const sheets = google.sheets({version: 'v4', auth});
+  sheets.spreadsheets.values.get({
+    spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
+    range: 'Class Data!A2:E',
+  }, (err, res) => {
+    if (err) return console.log('The API returned an error: ' + err);
+    const rows = res.data.values;
+    if (rows.length) {
+      console.log('Name, Major:');
+      // Print columns A and E, which correspond to indices 0 and 4.
+      rows.map((row) => {
+        console.log(`${row[0]}, ${row[4]}`);
+      });
+    } else {
+      console.log('No data found.');
+    }
+  });
+}
+
+module.exports = exports = { getData };
