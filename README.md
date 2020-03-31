@@ -16,8 +16,8 @@ If this is done correctly then output like the below will appear:
 Token stored to credentials/tokenFile
 Attached to sheet:  1eRi_fkjoiweueyrtlaskdjfho3498ghsZCU
 ```
-
-5. ```npm run test``` to verify (modifies development sheet)
+5. ```npm install -g tap```
+6. ```npm run test``` to verify (modifies development sheet)
 
   [a7a2d4a8]: https://developers.google.com/sheets/api/quickstart/nodejs "Credentials file"
 
