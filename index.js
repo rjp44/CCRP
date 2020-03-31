@@ -13,8 +13,14 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 var sheet = new Sheet(config.sheet);
 
-// We do this here to generate an early user prompt if we need to authenticate
-sheet.getData('A1:A2').then(result => console.info('Attached to sheet: ', config.sheet))
+// We do this here to generate an early user prompt if we need to authenticate, and
+//  bomb on fatal errors before server starts
+sheet.getData('A1:A2')
+  .then(result => console.info('Attached to sheet: ', config.sheet))
+  .catch(err => {
+    console.log(err);
+    process.exit(0);
+  });
 
 // routes will go here
 
@@ -37,7 +43,7 @@ app.post('/order-request', function (req, res, next) {
       .then(result => {
         res.setHeader('Content-Type', 'application/json');
         res.status(200)
-        .send(JSON.stringify(result))
+          .send(JSON.stringify(result))
       });
   } catch (err) {
     console.log('Error: ', err)
