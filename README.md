@@ -11,6 +11,7 @@ Authorize this app by visiting this url: https://accounts.google.com/o/oauth2/v2
 Enter the code from that page here:```
 
 Follow the prompts by pasting the URL into a web browser that is logged into the sheet you want to be able to modify.
+```
 
 If this is done correctly then output like the below will appear:
 
@@ -18,6 +19,7 @@ If this is done correctly then output like the below will appear:
 Token stored to credentials/tokenFile
 Attached to sheet:  1eRi_fkjoiweueyrtlaskdjfho3498ghsZCU
 ```
+
 5. ```npm install -g tap```
 6. ```npm run test``` to verify (modifies development sheet)
 
