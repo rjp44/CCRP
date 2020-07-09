@@ -33,17 +33,28 @@ sheet.getData('A1:A2')
 app.post('/order-request', function (req, res, next) {
   try {
     const jsonData = req.body
-
-    const answers = jsonData.twilio.collected_data.item_details.answers; //Get the answers object from the incoming request object
-    const objectKeys = Object.keys(answers)
-      .map(key => (key)) //Get a list of all keys within "answers" object
-
+    console.log('hook:', jsonData);
+    let needTime = jsonData.queryResult.parameters.time && new Date(jsonData.queryResult.parameters.time.replace(/\+.*/,''));
+    let time = `${needTime.getHours()} ${needTime.getMinutes()}`;
     // Add an array of strings which represents one row, return result or let express sort out error.
-    sheet.appendData('Requests!A:Z', [objectKeys.map(key => `${answers[key].answer}`)])
+    let output = {
+      "fulfillmentMessages": [
+        {
+          "text": {
+            "text": [
+          `${jsonData.queryResult.fulfillmentText} of ${jsonData.queryResult.parameters.Fruit} at ${time}`
+        ]
+          }
+            }
+          ]
+    };
+
+    console.log('result: ', JSON.stringify(output,null,2));
+    sheet.appendData('Requests!A:Z', [[process.env.CALLERNAME, jsonData.queryResult.parameters.Fruit, jsonData.queryResult.parameters.time]])
       .then(result => {
         res.setHeader('Content-Type', 'application/json');
         res.status(200)
-          .send(JSON.stringify(result))
+          .send(JSON.stringify(output))
       });
   } catch (err) {
     console.log('Error: ', err)
